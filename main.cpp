@@ -233,4 +233,7 @@ int main() {
   cout << "Max Flow: " << f << endl;
   print_flow_graph(flow_matrix);
 
+  print_flow_graph(adjacence_matrix);
+  print_flow_graph(capacity_matrix);
+
 }
