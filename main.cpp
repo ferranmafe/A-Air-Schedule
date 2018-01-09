@@ -1,26 +1,20 @@
 #include <iostream>
 #include <string>
 #include <vector>
-#include <list>
+#include <queue>
+#include <cmath>
+#include <climits>
 #include <utility>
 #include <fstream>
 #include <sstream>
 #include <stdlib.h>
 using namespace std;
 
-struct edge {
-  int arriving_vertex;
-  int weight;
-};
+typedef vector<vector<int> > Graph;
+typedef vector<int> flight;
 
-struct vertex {
-  int id;
-  list<edge> outgoing_edges;
-};
-
-vector<vector<int> > read_new_input() {
+void read_new_input(vector<flight>& flights_info_vector) {
   //Generem una matriu buida, que es la que retornarem plena amb els vols a tractar
-  vector<vector<int> > flights_info_vector;
 
   //Rebem el path del fitxer a obrir i tractar
   cout << "Siusplau, introdueixi el path del fitxer de vols del que vol generar el schedule:" << endl;
@@ -38,13 +32,12 @@ vector<vector<int> > read_new_input() {
     while(getline( flight_file, s )) {
       //Per cada linia, la descomposem en strings separats per " ", a efectes de
       //fer la transformació a int i guardarnos el resultat
-      vector<int> new_flight;
+      flight new_flight;
       istringstream line(s);
       for (string str; line >> str;) new_flight.push_back(atoi(str.c_str()));
       flights_info_vector.push_back(new_flight);
     }
     flight_file.close();
-    return flights_info_vector;
   }
   else {
     cout << "Error obrint el fitxer." << endl;
@@ -60,37 +53,22 @@ vector<vector<int> > read_new_input() {
  * 4_Per cada vertex del grup A hem de mirar a quins vertex del grup B es pot connectar
  * (Vol destí A = Vol origen B i temps arribada A + 15 <= temps sortida B)
  * 5_Connectem els vertex sueltos a s i t (Opcional, no se si cal fer-ho)
+ *
+ * NOTE: Definim els id dels nodes S (-1) i T (-2)
 */
-vector<vertex> parse_last_input_to_max_flow_adjacence_list_version_1(const vector<vector<int> >& flight_input) {
-  //Inicialitzem el graf de sortida
-  vector<vertex> outgoing_graph(2 * flight_input.size() + 2);
-
-  //Definim els id dels nodes S (-1) i T (-2)
-  outgoing_graph[2 * flight_input.size()].id = -1;
-  outgoing_graph[2 * flight_input.size() + 1].id = -2;
-
-  //Recorrem el graf de sortida. Per a cada element, li indiquem quin ID te, i fem
-  //les connexions amb t
-  for (int i = 0; i < 2 * flight_input.size(); ++i) {
-    //Afegim l'ID del vol (aixi podrem recuperar la relació vol - vertex a la sortida)
-    outgoing_graph[i].id = i % flight_input.size();
-
+void parse_last_input_to_max_flow_adjacence_list_version_1(const vector<flight>& flight_input, Graph& adjacence_matrix, Graph& capacity_matrix) {
+  //Recorrem el graf de sortida. Fem les connexions amb t
+  for (int i = flight_input.size(); i < 2 * flight_input.size(); ++i) {
     //En el cas dels vertex del grup B (els que arriben a t) a més de l'ID del vol
     //afegim la aresta que arriba a t
-    if (i >= flight_input.size()) {
-      edge t_edge;
-      t_edge.arriving_vertex = 2 * flight_input.size() + 1;
-      t_edge.weight = 1;
-      outgoing_graph[i].outgoing_edges.insert(outgoing_graph[i].outgoing_edges.begin(), t_edge);
-    }
+      adjacence_matrix[i][2 * flight_input.size() + 1] = 1;
+      capacity_matrix[i][2 * flight_input.size() + 1] = 1;
   }
 
   //Connectem s a tots els vertex del grup A
   for (int i = 0; i < flight_input.size(); ++i) {
-    edge s_edge;
-    s_edge.arriving_vertex = i;
-    s_edge.weight = 1;
-    outgoing_graph[2 * flight_input.size()].outgoing_edges.insert(outgoing_graph[2 * flight_input.size()].outgoing_edges.begin(), s_edge);
+    adjacence_matrix[2 * flight_input.size()][i] = 1;
+    capacity_matrix[2 * flight_input.size()][i] = 1;
   }
 
   //Recorrem tots els elements del grup A i per cada vol fem la connexió entre grup
@@ -98,73 +76,131 @@ vector<vertex> parse_last_input_to_max_flow_adjacence_list_version_1(const vecto
   for (int i = 0; i < flight_input.size(); ++i) {
     for (int j = 0; j < flight_input.size(); ++j) {
       if (flight_input[i][1] == flight_input[j][0] && flight_input[i][3] + 15 <= flight_input[j][2]) {
-        edge edge_ij;
-        edge_ij.arriving_vertex = j + flight_input.size();
-        edge_ij.weight = 1;
-        outgoing_graph[i].outgoing_edges.insert(outgoing_graph[i].outgoing_edges.begin(), edge_ij);
+        adjacence_matrix[i][j] = 1;
+        capacity_matrix[i][j] = 1;
       }
     }
   }
-  return outgoing_graph;
 }
 
 /*
-vector< list< pair<int, int> > > parse_last_input_to_max_flow_adjacence_list_version_2(const& vector<vector<int> > flight_input) {
+void parse_last_input_to_max_flow_adjacence_list_version_2(const vector<flight>& flight_input, Graph& adjacence_matrix, Graph& capacity_matrix) {
+  //Recorrem el graf de sortida. Fem les connexions amb t
+  for (int i = flight_input.size(); i < 2 * flight_input.size(); ++i) {
+    //En el cas dels vertex del grup B (els que arriben a t) a més de l'ID del vol
+    //afegim la aresta que arriba a t
+      adjacence_matrix[i][2 * flight_input.size() + 1] = 1;
+      capacity_matrix[i][2 * flight_input.size() + 1] = 1;
+  }
+
+  //Connectem s a tots els vertex del grup A
+  for (int i = 0; i < flight_input.size(); ++i) {
+    adjacence_matrix[2 * flight_input.size()][i] = 1;
+    capacity_matrix[2 * flight_input.size()][i] = 1;
+  }
+  for (int i = 0; i < flight_input.size(); ++i) {
+    make_connections_ith_flight(flight_input, adjacence_matrix, capacity_matrix);
+  }
+}
+
+
+void make_connections_ith_flight(vector<flight>& flight_input, Graph& adjacence_matrix, Graph& capacity_matrix) {
 
 }
 */
 
+int BreadthFirstSearch(const Graph& E, const Graph& C, Graph& F, vector<int>& P, int s, int t){
+    int n = C.size();
+    vector<int> M = vector<int>(n);
+    M[s] = INT_MAX;
+    queue<int> Q;
+    Q.push(s);
+    while (!Q.empty()){
+        int u = Q.front();
+        Q.pop();
+        for (int v = 0; v < E[u].size(); v++){
+            if (E[u][v] == 1){
+                if (C[u][v] - F[u][v] > 0 && P[v] == -1) {
+                    P[v] = u;
+                    M[v] = fmin(M[u], C[u][v] - F[u][v]);
+                    if (v != t){
+                        Q.push(v);
+                    }
+                    else {
+                        return M[t];
+                    }
+                }
+            }
+        }
+    }
+    return 0;
+}
+
+int edmondsKarp(const Graph& E, const Graph& C, Graph& F, int s, int t){
+    int f = 0;
+    int n = C.size();
+    while (true) {
+        vector<int> P = vector<int>(n, -1);
+        P[s] = s;
+        int m = BreadthFirstSearch(E,C,F,P,s,t);
+        if (m == 0){
+            return f;
+        }
+        f += m;
+        int v = t;
+        while (P[v] != v) {
+            int u = P[v];
+            F[u][v] += m;
+            F[v][u] -= m;
+            v = u;
+        }
+    }
+}
+
+
+void generate_schedule_i(const Graph& graph, const int& i, vector<int>& schedule_i) {
+  int j = 0;
+  bool connection_found = false;
+  while(j < (graph.size() - 2 / 2) && !connection_found) {
+    if (graph[i][j] == 1) {
+      connection_found = true;
+      schedule_i.push_back(j + 1);
+      generate_schedule_i(graph, j, schedule_i);
+    }
+    ++j;
+  }
+}
 /* PROCEDURE:
- * 1_Recorrem el graf buit buscant s
- * 2_Per cada vertex connectat amb s, mirem si te alguna connexió o no (si la té va al schedule com a pair)
- * 3_Mirem el grup B. Aquells vertex que no tinguin cap aresta incident serán pilots nous. Ho afegim al
- * schedule com a pair (inici, buit)
- * 4_Juntem les parelles de vols connectats formant el schedule de cada pilot.
- * 5_Retornem el length del schedule com a número de pilots, i després imprimim el schedule
+ * 1_Recorrem les connexions de cada node del grup B amb t. Aquells nodes que no tinguin fluxe seran
+ * els que inicien els schedules, perque no van precedits de cap altre.
+ * 2_Cada cop que trobem un dels nodes inici, el recorrem fins que el node final ja no tingui connexions.
 */
-void generate_schedule_and_output(const vector<vertex>& graph, const vector<vector<int> >& initial_flights) {
-  vector<int> connected_flights(initial_flights.size());
-  vector<bool> flights_without_another_one(initial_flights.size());
-
-  //Busquem s, i el seu index quedarà guardat a i.
-  bool s_found = false;
-  int i = graph.size() - 1;
-  while(i >=0 and not s_found) {
-    if (graph[i].id = -1) s_found = true;
-    else --i;
-  }
-
-  //Recorrem les arestes que surten de s, i per les que estàn connectades a una altre
-  //ens guardem la relació
-  list<edge>::iterator it = graph[i].outgoing_edges.begin();
-  for (it, it != graph[i].outgoing_edges.end(); ++it) {
-    if (graph[it->arriving_vertex].outgoing_edges.begin() != graph[it->arriving_vertex].outgoing_edges.end()) {
-      connected_flights[it->arriving_vertex] = graph[it->arriving_vertex].outgoing_edges.begin().arriving_vertex;
-      flights_found[it->arriving_vertex] = true;
+void generate_output(const Graph& graph) {
+  vector<vector<int> > schedule;
+  //Recorrem tots els nodes de B. Per cada node que no tingui connexió amb t, busquem el schedule
+  for (int i = (graph.size() - 2 / 2); i < graph.size() - 2; ++i) {
+    if (graph[i][graph.size() - 1] == 1) {
+      vector<int> schedule_i;
+      schedule_i.push_back(i%(graph.size() - 2 / 2) + 1);
+      generate_schedule_i(graph, i, schedule_i);
+      schedule.push_back(schedule_i);
     }
   }
-
-  //Afegim els vols tq no es poden concatenar amb cap altre
-  for (int j = 0; i < flights_found.size(); ++j) {
-    if (!flights_found[i]) {
-      connected_flights[i] = -1;
+  cout << schedule.size() << endl;
+  for (int i = 0; i < schedule.size(); ++i) {
+    for(int j = 0; j < schedule[i].size(); ++j) {
+      cout << schedule[i][j];
+      if (j != schedule[i].size() - 1) cout << " ";
     }
-  }
-
-  vector<vector<int> > scheduled_flights;
-  for (int i = 0; i < connected_flights.size(); ++i) {
-
+    cout << endl;
   }
 }
 
-void print_flow_graph(vector<vertex>& graph) {
+void print_flow_graph(Graph& graph) {
   cout << "Graph Size: " << graph.size() << endl;
   for (int i = 0; i < graph.size(); ++i) {
-    cout << "Vertex " << i << endl;
-    cout << "ID: " << graph[i].id << endl;
-    list<edge>::iterator it = graph[i].outgoing_edges.begin();
-    for (it; it != graph[i].outgoing_edges.end(); ++it) {
-      cout << "Ingoing vertex: " << it->arriving_vertex << " Weight: " << it->weight << endl;
+    for(int j = 0; j < graph.size(); ++j) {
+      cout << graph[i][j] << " ";
     }
     cout << endl;
   }
@@ -183,12 +219,18 @@ int main() {
   }
 
   //Llegim la entrada d'un fitxer passat com a paràmetre
-  vector<vector<int> > flight_input = read_new_input();
+  vector<flight> flight_input;
+  read_new_input(flight_input);
 
   //Convertim la entrada en un graf amb pesos sobre el que aplicar max flow (que serà diferent en funció de si acceptem que els pilots
   //viatjin o no)
-  vector<vertex> graph_to_apply_max_flow;
-  if (v == 1) graph_to_apply_max_flow =  parse_last_input_to_max_flow_adjacence_list_version_1(flight_input);
+  Graph adjacence_matrix(2 * flight_input.size() + 2, vector<int>(2 * flight_input.size() + 2, 0));
+  Graph capacity_matrix (2 * flight_input.size() + 2, vector<int>(2 * flight_input.size() + 2, 0));
+  Graph flow_matrix     (2 * flight_input.size() + 2, vector<int>(2 * flight_input.size() + 2, 0));
+  if (v == 1) parse_last_input_to_max_flow_adjacence_list_version_1(flight_input, adjacence_matrix, capacity_matrix);
   //else graph_to_apply_max_flow = parse_last_input_to_max_flow_adjacence_list_version_1();
+  int f = edmondsKarp(adjacence_matrix, capacity_matrix, flow_matrix, 2* flight_input.size(), 2* flight_input.size() + 1);
+  cout << "Max Flow: " << f << endl;
+  print_flow_graph(flow_matrix);
 
 }
