@@ -76,14 +76,26 @@ void parse_last_input_to_max_flow_adjacence_list_version_1(const vector<flight>&
   for (int i = 0; i < flight_input.size(); ++i) {
     for (int j = 0; j < flight_input.size(); ++j) {
       if (flight_input[i][1] == flight_input[j][0] && flight_input[i][3] + 15 <= flight_input[j][2]) {
-        adjacence_matrix[i][j] = 1;
-        capacity_matrix[i][j] = 1;
+        adjacence_matrix[i][flight_input.size() + j] = 1;
+        capacity_matrix[i][flight_input.size() + j] = 1;
       }
     }
   }
 }
 
-/*
+
+void make_connections_ith_flight(const vector<flight>& flight_input, Graph& adjacence_matrix, Graph& capacity_matrix, const int& i, const int& j) {
+  int k = 0;
+  while(k < flight_input.size()) {
+    if (flight_input[j][1] == flight_input[k][0] && flight_input[j][3] + 15 < flight_input[k][2]) {
+      adjacence_matrix[i][flight_input.size() + k] = 1;
+      capacity_matrix[i][flight_input.size() + k] = 1;
+      make_connections_ith_flight(flight_input, adjacence_matrix, capacity_matrix, i, k);
+    }
+    ++k;
+  }
+}
+
 void parse_last_input_to_max_flow_adjacence_list_version_2(const vector<flight>& flight_input, Graph& adjacence_matrix, Graph& capacity_matrix) {
   //Recorrem el graf de sortida. Fem les connexions amb t
   for (int i = flight_input.size(); i < 2 * flight_input.size(); ++i) {
@@ -99,15 +111,9 @@ void parse_last_input_to_max_flow_adjacence_list_version_2(const vector<flight>&
     capacity_matrix[2 * flight_input.size()][i] = 1;
   }
   for (int i = 0; i < flight_input.size(); ++i) {
-    make_connections_ith_flight(flight_input, adjacence_matrix, capacity_matrix);
+    make_connections_ith_flight(flight_input, adjacence_matrix, capacity_matrix, i, i);
   }
 }
-
-
-void make_connections_ith_flight(vector<flight>& flight_input, Graph& adjacence_matrix, Graph& capacity_matrix) {
-
-}
-*/
 
 int BreadthFirstSearch(const Graph& E, const Graph& C, Graph& F, vector<int>& P, int s, int t){
     int n = C.size();
@@ -161,9 +167,10 @@ int edmondsKarp(const Graph& E, const Graph& C, Graph& F, int s, int t){
 void generate_schedule_i(const Graph& graph, const int& i, vector<int>& schedule_i) {
   int j = 0;
   bool connection_found = false;
-  while(j < (graph.size() - 2 / 2) && !connection_found) {
+  while(j < ((graph.size() - 2) / 2) && !connection_found) {
     if (graph[i][j] == 1) {
       connection_found = true;
+      cout << "Adding element " << j + 1 << endl;
       schedule_i.push_back(j + 1);
       generate_schedule_i(graph, j, schedule_i);
     }
@@ -178,10 +185,11 @@ void generate_schedule_i(const Graph& graph, const int& i, vector<int>& schedule
 void generate_output(const Graph& graph) {
   vector<vector<int> > schedule;
   //Recorrem tots els nodes de B. Per cada node que no tingui connexió amb t, busquem el schedule
-  for (int i = (graph.size() - 2 / 2); i < graph.size() - 2; ++i) {
-    if (graph[i][graph.size() - 1] == 1) {
+  for (int i = ((graph.size() - 2) / 2); i < graph.size() - 2; ++i) {
+    if (graph[i][graph.size() - 1] != 1) {
       vector<int> schedule_i;
-      schedule_i.push_back(i%(graph.size() - 2 / 2) + 1);
+      cout << "Adding element " << (i%((graph.size() - 2) / 2)) + 1 << endl;
+      schedule_i.push_back((i%((graph.size() - 2) / 2)) + 1);
       generate_schedule_i(graph, i, schedule_i);
       schedule.push_back(schedule_i);
     }
@@ -228,12 +236,10 @@ int main() {
   Graph capacity_matrix (2 * flight_input.size() + 2, vector<int>(2 * flight_input.size() + 2, 0));
   Graph flow_matrix     (2 * flight_input.size() + 2, vector<int>(2 * flight_input.size() + 2, 0));
   if (v == 1) parse_last_input_to_max_flow_adjacence_list_version_1(flight_input, adjacence_matrix, capacity_matrix);
-  //else graph_to_apply_max_flow = parse_last_input_to_max_flow_adjacence_list_version_1();
-  int f = edmondsKarp(adjacence_matrix, capacity_matrix, flow_matrix, 2* flight_input.size(), 2* flight_input.size() + 1);
-  cout << "Max Flow: " << f << endl;
-  print_flow_graph(flow_matrix);
+  else parse_last_input_to_max_flow_adjacence_list_version_2(flight_input, adjacence_matrix, capacity_matrix);
 
   print_flow_graph(adjacence_matrix);
   print_flow_graph(capacity_matrix);
-
+  //int f = edmondsKarp(adjacence_matrix, capacity_matrix, flow_matrix, 2* flight_input.size(), 2* flight_input.size() + 1);
+  //generate_output(flow_matrix);
 }
