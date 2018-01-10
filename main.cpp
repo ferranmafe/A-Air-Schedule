@@ -1,9 +1,11 @@
 #include <iostream>
 #include <vector>
 #include <queue>
+#include <stack>
 #include <cmath>
 #include <fstream>
 #include <sstream>
+#include <ctime>
 using namespace std;
 
 typedef vector<vector<int> > Graph;
@@ -111,7 +113,7 @@ int BreadthFirstSearch(const Graph& C, Graph& F, vector<int>& P, int s, int t){
     int n = C.size();
     vector<int> M = vector<int>(n);
     M[s] = INT_MAX;
-    std::queue<int> Q;
+    queue<int> Q;
     Q.push(s);
     while (!Q.empty()){
         int u = Q.front();
@@ -133,13 +135,60 @@ int BreadthFirstSearch(const Graph& C, Graph& F, vector<int>& P, int s, int t){
     return 0;
 }
 
-int edmondsKarp(const Graph& C, Graph& F, int s, int t){
+int EdmondsKarp(const Graph& C, Graph& F, int s, int t){
     int f = 0;
     int n = C.size();
     while (true) {
         vector<int> P(n, -1);
         P[s] = s;
         int m = BreadthFirstSearch(C,F,P,s,t);
+        if (m == 0){
+            return f;
+        }
+        f += m;
+        int v = t;
+        while (P[v] != v) {
+            int u = P[v];
+            F[u][v] += m;
+            F[v][u] -= m;
+            v = u;
+        }
+    }
+}
+
+int DepthFirstSearch(const Graph& C, Graph& F, vector<int>& P, int s, int t){
+    int n = C.size();
+    vector<int> M = vector<int>(n);
+    M[s] = INT_MAX;
+    stack<int> S;
+    S.push(s);
+    while (!S.empty()){
+        int u = S.top();
+        S.pop();
+        for (int v = 0; v < n; v++){
+            if (C[u][v] - F[u][v] > 0 && P[v] == -1) {
+                P[v] = u;
+                M[v] = fmin(M[u], C[u][v] - F[u][v]);
+                if (v != t){
+                    S.push(v);
+                }
+                else {
+                    return M[t];
+                }
+            }
+
+        }
+    }
+    return 0;
+}
+
+int FordFulkerson(const Graph& C, Graph& F, int s, int t){
+    int f = 0;
+    int n = C.size();
+    while (true) {
+        vector<int> P(n, -1);
+        P[s] = s;
+        int m = DepthFirstSearch(C,F,P,s,t);
         if (m == 0){
             return f;
         }
@@ -210,28 +259,52 @@ void print_flow_graph(Graph& graph) {
 int main() {
     cout << "Benvingut al programa " << '"' << "Air Schedule v1.0" << '"' << "." << endl;
 
-  //Demanem la versió del programa. Si aquesta es diferent de 1 o 2, la tornem a demanar
-  cout << "Siusplau, introdueixi la versió del programa a utilitzar (1 - Versió 1, 2 - Versió 2):" << endl;
-  int v;
-  cin >> v;
-  while (v != 1 and v != 2) {
-    cout << "La versió introduida no es correcta. Siusplau, introdueixi la versió sobre la que vol executar el programa (1 - Versió 1, 2 - Versió 2):" << endl;
+    //Demanem la versió del programa. Si aquesta es diferent de 1 o 2, la tornem a demanar
+    cout << "Siusplau, introdueixi la versió del programa a utilitzar (1 - Versió 1, 2 - Versió 2):" << endl;
+    int v;
     cin >> v;
-  }
+    while (v != 1 and v != 2) {
+        cout
+                << "La versió introduida no es correcta. Siusplau, introdueixi la versió sobre la que vol executar el programa (1 - Versió 1, 2 - Versió 2):"
+                << endl;
+        cin >> v;
+    }
 
-  //Llegim la entrada d'un fitxer passat com a paràmetre
-  vector<flight> flight_input;
-  read_new_input(flight_input);
+    //Demanem algorisme a executar
+    cout << "Siusplau, introdueixi el algorisme a utilitzar (1 - Edmonds-Karp, 2 - Ford-Fulkerson):" << endl;
+    int k;
+    cin >> k;
+    while (k != 1 and k != 2) {
+        cout
+                << "L'algorisme introduit no es correcte. Siusplau, introdueixi l'algorisme sobre el que vol executar el programa (1 - Edmonds-Karp, 2 - Ford-Fulkerson):"
+                << endl;
+        cin >> k;
+    }
 
-  //Convertim la entrada en un graf amb pesos sobre el que aplicar max flow (que serà diferent en funció de si acceptem que els pilots
-  //viatjin o no)
-  Graph capacity_matrix (2 * flight_input.size() + 2, vector<int>(2 * flight_input.size() + 2, 0));
-  Graph flow_matrix     (2 * flight_input.size() + 2, vector<int>(2 * flight_input.size() + 2, 0));
-  if (v == 1) parse_last_input_to_max_flow_adjacence_list_version_1(flight_input, capacity_matrix);
-  else parse_last_input_to_max_flow_adjacence_list_version_2(flight_input, capacity_matrix);
+    time_t ini = time(0);
 
-  //print_flow_graph(adjacence_matrix);
-  //print_flow_graph(capacity_matrix);
-  edmondsKarp(capacity_matrix, flow_matrix, 2* flight_input.size(), 2* flight_input.size() + 1);
-  generate_output(flow_matrix);
+    //Llegim la entrada d'un fitxer passat com a paràmetre
+    vector<flight> flight_input;
+    read_new_input(flight_input);
+
+    //Convertim la entrada en un graf amb pesos sobre el que aplicar max flow (que serà diferent en funció de si acceptem que els pilots
+    //viatjin o no)
+    Graph capacity_matrix(2 * flight_input.size() + 2, vector<int>(2 * flight_input.size() + 2, 0));
+    Graph flow_matrix(2 * flight_input.size() + 2, vector<int>(2 * flight_input.size() + 2, 0));
+    if (v == 1) parse_last_input_to_max_flow_adjacence_list_version_1(flight_input, capacity_matrix);
+    else parse_last_input_to_max_flow_adjacence_list_version_2(flight_input, capacity_matrix);
+
+    time_t one = time(0);
+
+    if (k == 1)
+        EdmondsKarp(capacity_matrix, flow_matrix, 2 * flight_input.size(), 2 * flight_input.size() + 1);
+    else
+        FordFulkerson(capacity_matrix, flow_matrix, 2 * flight_input.size(), 2 * flight_input.size() + 1);
+
+    cout << "Algoritmo ejecutado!" << endl;
+
+    cout << time(0)-one << " " << one-ini << endl;
+
+    generate_output(flow_matrix);
 }
+
