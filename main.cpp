@@ -127,18 +127,17 @@ int BreadthFirstSearch(const Graph& E, const Graph& C, Graph& F, vector<int>& P,
         int u = Q.front();
         Q.pop();
         for (int v = 0; v < E[u].size(); v++){
-            if (E[u][v] == 1){
-                if (C[u][v] - F[u][v] > 0 && P[v] == -1) {
-                    P[v] = u;
-                    M[v] = fmin(M[u], C[u][v] - F[u][v]);
-                    if (v != t){
-                        Q.push(v);
-                    }
-                    else {
-                        return M[t];
-                    }
+            if (C[u][v] - F[u][v] > 0 && P[v] == -1) {
+                P[v] = u;
+                M[v] = fmin(M[u], C[u][v] - F[u][v]);
+                if (v != t){
+                    Q.push(v);
+                }
+                else {
+                    return M[t];
                 }
             }
+
         }
     }
     return 0;
@@ -148,7 +147,7 @@ int edmondsKarp(const Graph& E, const Graph& C, Graph& F, int s, int t){
     int f = 0;
     int n = C.size();
     while (true) {
-        vector<int> P = vector<int>(n, -1);
+        vector<int> P(n, -1);
         P[s] = s;
         int m = BreadthFirstSearch(E,C,F,P,s,t);
         if (m == 0){
@@ -244,5 +243,6 @@ int main() {
   //print_flow_graph(capacity_matrix);
   int f = edmondsKarp(adjacence_matrix, capacity_matrix, flow_matrix, 2* flight_input.size(), 2* flight_input.size() + 1);
     cout << "Max Flow: " << f << endl;
+    print_flow_graph(flow_matrix);
     generate_output(flow_matrix);
 }
