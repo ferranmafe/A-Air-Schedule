@@ -117,7 +117,7 @@ void parse_last_input_to_max_flow_adjacence_list_version_2(const vector<flight>&
   }
 }
 
-int BreadthFirstSearch(const Graph& E, const Graph& C, Graph& F, vector<int>& P, int s, int t){
+int BreadthFirstSearch(const Graph& C, Graph& F, vector<int>& P, int s, int t){
     int n = C.size();
     vector<int> M = vector<int>(n);
     M[s] = INT_MAX;
@@ -126,7 +126,7 @@ int BreadthFirstSearch(const Graph& E, const Graph& C, Graph& F, vector<int>& P,
     while (!Q.empty()){
         int u = Q.front();
         Q.pop();
-        for (int v = 0; v < E[u].size(); v++){
+        for (int v = 0; v < n; v++){
             if (C[u][v] - F[u][v] > 0 && P[v] == -1) {
                 P[v] = u;
                 M[v] = fmin(M[u], C[u][v] - F[u][v]);
@@ -143,7 +143,7 @@ int BreadthFirstSearch(const Graph& E, const Graph& C, Graph& F, vector<int>& P,
     return 0;
 }
 
-int edmondsKarp(const Graph& E, const Graph& C, Graph& F, int s, int t){
+int edmondsKarp(const Graph& C, Graph& F, int s, int t){
     int f = 0;
     int n = C.size();
     while (true) {
