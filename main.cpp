@@ -12,6 +12,8 @@ using namespace std;
 
 typedef vector<vector<int> > Graph;
 typedef vector<int> flight;
+// /Users/danielmartinezbordes/ClionProjects/A-Air-Sch/test_entry.txt
+
 
 void read_new_input(vector<flight>& flights_info_vector) {
   //Generem una matriu buida, que es la que retornarem plena amb els vols a tractar
@@ -119,7 +121,7 @@ int BreadthFirstSearch(const Graph& E, const Graph& C, Graph& F, vector<int>& P,
     int n = C.size();
     vector<int> M = vector<int>(n);
     M[s] = INT_MAX;
-    queue<int> Q;
+    std::queue<int> Q;
     Q.push(s);
     while (!Q.empty()){
         int u = Q.front();
@@ -215,7 +217,7 @@ void print_flow_graph(Graph& graph) {
 }
 
 int main() {
-  cout << "Benvingut al programa " << '"' << "Air Schedule v1.0" << '"' << "." << endl;
+    cout << "Benvingut al programa " << '"' << "Air Schedule v1.0" << '"' << "." << endl;
 
   //Demanem la versió del programa. Si aquesta es diferent de 1 o 2, la tornem a demanar
   cout << "Siusplau, introdueixi la versió del programa a utilitzar (1 - Versió 1, 2 - Versió 2):" << endl;
@@ -238,8 +240,9 @@ int main() {
   if (v == 1) parse_last_input_to_max_flow_adjacence_list_version_1(flight_input, adjacence_matrix, capacity_matrix);
   else parse_last_input_to_max_flow_adjacence_list_version_2(flight_input, adjacence_matrix, capacity_matrix);
 
-  print_flow_graph(adjacence_matrix);
-  print_flow_graph(capacity_matrix);
-  //int f = edmondsKarp(adjacence_matrix, capacity_matrix, flow_matrix, 2* flight_input.size(), 2* flight_input.size() + 1);
-  //generate_output(flow_matrix);
+  //print_flow_graph(adjacence_matrix);
+  //print_flow_graph(capacity_matrix);
+  int f = edmondsKarp(adjacence_matrix, capacity_matrix, flow_matrix, 2* flight_input.size(), 2* flight_input.size() + 1);
+    cout << "Max Flow: " << f << endl;
+    generate_output(flow_matrix);
 }
