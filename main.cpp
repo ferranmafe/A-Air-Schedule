@@ -6,6 +6,8 @@
 #include <fstream>
 #include <sstream>
 #include <ctime>
+#include <climits>
+#include <stdlib.h>
 using namespace std;
 
 typedef vector<vector<int> > Graph;
@@ -80,7 +82,7 @@ void parse_last_input_to_max_flow_adjacence_list_version_1(const vector<flight>&
   }
 }
 
-
+/*
 void make_connections_ith_flight(const vector<flight>& flight_input, Graph& capacity_matrix, const int& i, const int& j) {
   int k = 0;
   while(k < flight_input.size()) {
@@ -106,6 +108,51 @@ void parse_last_input_to_max_flow_adjacence_list_version_2(const vector<flight>&
   }
   for (int i = 0; i < flight_input.size(); ++i) {
     make_connections_ith_flight(flight_input, capacity_matrix, i, i);
+  }
+}
+*/
+
+void parse_last_input_to_max_flow_adjacence_list_version_2(const vector<flight>& flight_input, Graph& capacity_matrix) {
+  //Recorrem el graf de sortida. Fem les connexions amb t
+  vector<bool> visited_vertex(flight_input.size(), false);
+  for (int i = flight_input.size(); i < 2 * flight_input.size(); ++i) {
+    //En el cas dels vertex del grup B (els que arriben a t) a més de l'ID del vol
+    //afegim la aresta que arriba a t
+    capacity_matrix[i][2 * flight_input.size() + 1] = 1;
+  }
+
+  //Connectem s a tots els vertex del grup A
+  for (int i = 0; i < flight_input.size(); ++i) {
+    capacity_matrix[2 * flight_input.size()][i] = 1;
+  }
+  stack<int> S;
+  for (int i = 0; i < flight_input.size(); ++i) {
+    S.push(i);
+    while (!S.empty()){
+      int u = S.top();
+      S.pop();
+      for (int j = 0; j < flight_input.size(); ++j) {
+        if (visited_vertex[j]) {
+          if (flight_input[u][1] == flight_input[j][0] && flight_input[u][3] + 15 <= flight_input[j][2]) {
+            capacity_matrix[u][flight_input.size() + j] = 1;
+            for (int k = 0; k < flight_input.size(); ++k) {
+              if (capacity_matrix[j][flight_input.size() + k]) {
+                capacity_matrix[u][flight_input.size() + k] = 1;
+                capacity_matrix[i][flight_input.size() + k] = 1;
+              }
+            }
+          }
+        }
+        else {
+          if (flight_input[u][1] == flight_input[j][0] && flight_input[u][3] + 15 < flight_input[j][2]) {
+            capacity_matrix[u][flight_input.size() + j] = 1;
+            capacity_matrix[i][flight_input.size() + j] = 1;
+            S.push(j);
+          }
+        }
+      }
+      visited_vertex[u] = true;
+    }
   }
 }
 
@@ -294,17 +341,19 @@ int main() {
     if (v == 1) parse_last_input_to_max_flow_adjacence_list_version_1(flight_input, capacity_matrix);
     else parse_last_input_to_max_flow_adjacence_list_version_2(flight_input, capacity_matrix);
 
+
+
     time_t one = time(0);
+    int f;
 
     if (k == 1)
-        EdmondsKarp(capacity_matrix, flow_matrix, 2 * flight_input.size(), 2 * flight_input.size() + 1);
+        f = EdmondsKarp(capacity_matrix, flow_matrix, 2 * flight_input.size(), 2 * flight_input.size() + 1);
     else
-        FordFulkerson(capacity_matrix, flow_matrix, 2 * flight_input.size(), 2 * flight_input.size() + 1);
-
+        f = FordFulkerson(capacity_matrix, flow_matrix, 2 * flight_input.size(), 2 * flight_input.size() + 1);
+    cout << "MAX FLOW: " << f << endl;
     cout << "Algoritmo ejecutado!" << endl;
 
     cout << time(0)-one << " " << one-ini << endl;
 
     generate_output(flow_matrix);
 }
-
