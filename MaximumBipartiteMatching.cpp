@@ -157,14 +157,14 @@ vector<vector<int> > generate_output_matrix(const Graph& graph) {
 
 void writeFile(string filePath, string fileContent){
     ofstream file;
-    file.open (filePath, fstream::in | fstream::out | fstream::app);
+    file.open (filePath, fstream::in | fstream::out | fstream::trunc);
     file << fileContent;
     file.close();
 }
 
 void writeVectorFile(string filePath, vector<string>& fileContent){
     ofstream file;
-    file.open (filePath, fstream::in | fstream::out | fstream::app);
+    file.open (filePath, fstream::in | fstream::out | fstream::trunc);
     for (int i = 0; i < fileContent.size(); i++){
         file << fileContent[i] << endl;
     }
@@ -173,7 +173,7 @@ void writeVectorFile(string filePath, vector<string>& fileContent){
 
 void writeTimes(string filePath, vector<double> times){
     ofstream file;
-    file.open (filePath, fstream::in | fstream::out | fstream::app);
+    file.open (filePath, fstream::in | fstream::out | fstream::trunc);
     for (int i = 2; i < times.size(); i++){
         file << "instance_100_" + to_string(i) + "_*.air;" << times[i]/10 << endl;
     }
@@ -218,7 +218,7 @@ int main() {
                     clock_t begin = clock();
                     //empezar a contar
                     Graph capacity_matrix(2 * flight_input.size() + 2, vector<int>(2 * flight_input.size() + 2, 0));
-                    if (k == 0) parse_last_input_to_max_flow_adjacence_list_version_1(flight_input, capacity_matrix);
+                    if (k == 1) parse_last_input_to_max_flow_adjacence_list_version_1(flight_input, capacity_matrix);
                     else parse_last_input_to_max_flow_adjacence_list_version_2(flight_input, capacity_matrix);
                     string algorithm_used;
                     if (l == 0)

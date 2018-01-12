@@ -157,14 +157,14 @@ vector<vector<int> > generate_output(const Graph &graph) {
 
 void writeFile(string filePath, string fileContent){
     ofstream file;
-    file.open (filePath, fstream::in | fstream::out | fstream::app);
+    file.open (filePath, fstream::in | fstream::out | fstream::trunc);
     file << fileContent;
     file.close();
 }
 
 void writeVectorFile(string filePath, vector<string>& fileContent){
     ofstream file;
-    file.open (filePath, fstream::in | fstream::out | fstream::app);
+    file.open (filePath, fstream::in | fstream::out | fstream::trunc);
     for (int i = 0; i < fileContent.size(); i++){
         file << fileContent[i] << endl;
     }
@@ -173,7 +173,7 @@ void writeVectorFile(string filePath, vector<string>& fileContent){
 
 void writeTimes(string filePath, vector<double> times){
     ofstream file;
-    file.open (filePath, fstream::in | fstream::out | fstream::app);
+    file.open (filePath, fstream::in | fstream::out | fstream::trunc);
     for (int i = 2; i < times.size(); i++){
         file << "instance_100_" + to_string(i) + "_*.air;" << times[i]/10 << endl;
     }
@@ -210,6 +210,7 @@ int main() {
             string pathInputName = baseInputName + fileName + ".air";
             vector<flight> flight_input;
             read_new_input(flight_input, pathInputName);
+            //read_new_input(flight_input, "./test.txt");
             for (int k = 1; k <= 2; k++) {
                 string version = "Version" + to_string(k) + "/";
                 //Convertim la entrada en un graf amb pesos sobre el que aplicar max flow (que serà diferent en funció de si acceptem que els pilots

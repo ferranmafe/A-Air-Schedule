@@ -295,8 +295,8 @@ set(SOURCE_FILES
     Benchmark/instance_100_9_8.air
     Benchmark/instance_100_9_9.air
     Benchmark/TablaResultadosEjemplo.txt
-        CirculationWithDemands.cpp
+        MaximumBipartiteMatching.cpp
     Makefile
-    README.md)
+    README.md main.cpp)
 
 add_executable(A_Air_Schedule ${SOURCE_FILES})
