@@ -6,4 +6,7 @@ void usage() {
 
 int int main(int argc, char* argv[] ) {
   if (argc != 3) usage();
+  int version = atoi(argv[2]);
+  int algoritmo = atoi(argv[1]);
+  string entrada = argv[3];
 }
