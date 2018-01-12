@@ -249,7 +249,8 @@ int main() {
     int f;
 
     if (k == 1)
-        f = EdmondsKarp(capacity_matrix, flow_matrix, 2 * flight_input.size(), 2 * flight_input.size() + 1);
+        f = DinicAlgorithm(capacity_matrix, flow_matrix, 2 * flight_input.size(), 2 * flight_input.size() + 1);
+        //f = EdmondsKarp(capacity_matrix, flow_matrix, 2 * flight_input.size(), 2 * flight_input.size() + 1);
     else
         f = FordFulkerson(capacity_matrix, flow_matrix, 2 * flight_input.size(), 2 * flight_input.size() + 1);
     cout << "MAX FLOW: " << f << endl;
