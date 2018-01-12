@@ -1,6 +1,6 @@
-run: MaximumBipartiteMatching.cpp algorithms.cpp
-	g++ -o program MaximumBipartiteMatching.cpp
-	./program $(arg1) $(arg2) $(arg3)
+run: main.cpp algorithms.cpp
+	g++ -o program main.cpp
+	./program $(x) $(y) $(z)
 
 clean:
 	rm program

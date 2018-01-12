@@ -167,17 +167,30 @@ string writeSchedule(vector<vector<int> >& schedule){
 void usage() {
     cout << "./program  [Algoritmo de Max Flow] [Versión] [Fichero de entrada]" << endl;
     cout << "Programa que calcula, dados unos vuelos de entrada, el schedule que requiere el mínimo de pilotos para llevarse a cabo" << endl;
+    cout << "[Algoritmo de Max Flow] Algoritmo que se va a usar para calcular el grafo de flujos:" << endl;
+    cout << "0 -> Edmonds-Karp" << endl;
+    cout << "1 -> Dinic" << endl;
+    cout << "[Versión] Versión de la práctica que se va a utilizar [1 o 2]" << endl;
+    cout << "[Fichero de entrada] Nombre del fichero que contiene los datos de la entrada" << endl;
     exit(1);
 }
 
 int main(int argc, char* argv[] ) {
     string baseInputName = "./Benchmark/";
     string baseOutputName = "./";
-    if (argc != 3) usage();
+    if (argc != 4) usage();
     int version = atoi(argv[2]);
+    if (version <= 0 || version >= 3) {
+        cout << "La versión introducida no es válida. La versión ha de ser un entero entre 1 y 2." << endl;
+        exit(1);
+    }
     int algoritmo = atoi(argv[1]);
+    if (algoritmo < 0 || algoritmo > 1) {
+        cout << "El algoritmo introducido no es válido. El algoritmo ha de ser un entero entre 0 y 1." << endl;
+        exit(1);
+    }
     string fileName = argv[3];
-    string pathInputName = baseInputName + fileName;
+    string pathInputName = baseInputName + fileName + ".air";
     vector<flight> flight_input;
     read_new_input(flight_input, pathInputName);
     Graph capacity_matrix(2 * flight_input.size() + 2, vector<int>(2 * flight_input.size() + 2, 0));
@@ -192,7 +205,7 @@ int main(int argc, char* argv[] ) {
         f = DinicAlgorithm(capacity_matrix, flow_matrix, 2 * flight_input.size(),
                            2 * flight_input.size() + 1);
     vector<vector<int> > schedule = generate_output_matrix(flow_matrix);
-    string pathScheduleName = baseOutputName + ".out";
+    string pathScheduleName = baseOutputName + fileName + ".out";
     string scheduleContent = writeSchedule(schedule);
     writeFile(pathScheduleName, scheduleContent);
 }

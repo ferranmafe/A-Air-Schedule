@@ -16,7 +16,7 @@ void usage() {
 int main(int argc, char* argv[] ) {
   if (argc != 4) usage();
   int version = atoi(argv[2]);
-  if (version <= 0 || version >= 2) {
+  if (version <= 0 || version >= 3) {
     cout << "La versión introducida no es válida. La versión ha de ser un entero entre 1 y 2." << endl;
     exit(1);
   }
