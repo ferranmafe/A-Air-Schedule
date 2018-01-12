@@ -295,7 +295,7 @@ set(SOURCE_FILES
     Benchmark/instance_100_9_8.air
     Benchmark/instance_100_9_9.air
     Benchmark/TablaResultadosEjemplo.txt
-    main2.cpp
+        CirculationWithDemands.cpp
     Makefile
     README.md)
 
