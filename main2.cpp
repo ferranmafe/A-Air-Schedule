@@ -106,17 +106,19 @@ void parse_last_input_to_max_flow_adjacence_list_version_2(const vector<flight>&
 
 void parse_last_input_to_max_flow_adjacence_list_version_2(const vector<flight> &flight_input, Graph &capacity_matrix) {
     //Recorrem el graf de sortida. Fem les connexions amb t
-    vector<bool> visited_vertex(flight_input.size(), false);
-    for (int i = flight_input.size(); i < 2 * flight_input.size(); ++i) {
-        //En el cas dels vertex del grup B (els que arriben a t) a més de l'ID del vol
-        //afegim la aresta que arriba a t
-        capacity_matrix[i][2 * flight_input.size() + 1] = 1;
+    unsigned long n = flight_input.size();
+    vector<bool> visited_vertex(n, false);
+
+    for (int i = 0; i < n; ++i) {
+        capacity_matrix[2 * n][i] = 1;
+        capacity_matrix[i][2 * n + 3] = 1;
     }
 
-    //Connectem s a tots els vertex del grup A
-    for (int i = 0; i < flight_input.size(); ++i) {
-        capacity_matrix[2 * flight_input.size()][i] = 1;
+    for (int i = n; i < 2 * n; ++i) {
+        capacity_matrix[2 * n + 2][i] = 1;
+        capacity_matrix[i][2 * n + 1] = 1;
     }
+
     stack<int> S;
     for (int i = 0; i < flight_input.size(); ++i) {
         S.push(i);
@@ -126,18 +128,18 @@ void parse_last_input_to_max_flow_adjacence_list_version_2(const vector<flight> 
             for (int j = 0; j < flight_input.size(); ++j) {
                 if (visited_vertex[j]) {
                     if (flight_input[u][1] == flight_input[j][0] && flight_input[u][3] + 15 <= flight_input[j][2]) {
-                        capacity_matrix[u][flight_input.size() + j] = 1;
+                        capacity_matrix[u+n][j] = 1;
                         for (int k = 0; k < flight_input.size(); ++k) {
-                            if (capacity_matrix[j][flight_input.size() + k]) {
-                                capacity_matrix[u][flight_input.size() + k] = 1;
-                                capacity_matrix[i][flight_input.size() + k] = 1;
+                            if (capacity_matrix[j+n][k]) {
+                                capacity_matrix[u+n][k] = 1;
+                                capacity_matrix[i+n][k] = 1;
                             }
                         }
                     }
                 } else {
                     if (flight_input[u][1] == flight_input[j][0] && flight_input[u][3] + 15 < flight_input[j][2]) {
-                        capacity_matrix[u][flight_input.size() + j] = 1;
-                        capacity_matrix[i][flight_input.size() + j] = 1;
+                        capacity_matrix[u+n][j] = 1;
+                        capacity_matrix[i+n][j] = 1;
                         S.push(j);
                     }
                 }
@@ -195,8 +197,6 @@ void generate_output(const Graph &graph) {
         }
         cout << endl;
     }
-
-    cout << endl << endl << endl << schedule.size() << endl;
 }
 
 void print_flow_graph(Graph &graph) {
@@ -270,23 +270,13 @@ int main() {
             r = m - 1;
         } else l = m + 1;
 
-        for (int i = 0; i < 2 * n + 4; ++i) {
-            for (int j = 0; j < 2 * n + 4; ++j) {
-                flow_matrix[i][j] = 0;
-            }
-        }
+        flow_matrix = vector<vector<int> >(2*n+4, vector<int>(2*n+4,0));
     }
 
 
     time_t one = time(0);
 
     //print_flow_graph(best_flow);
-
-    for (int i = n; i < 2*n; ++i){
-        for (int j = 0; j < n; ++j){
-            if (best_flow[i][j] == 1) cout << "reaprovechando supaipa" << endl;
-        }
-    }
 
     cout << "MAX FLOW: " << f << endl;
     cout << "PILOTOS: " << p << endl;

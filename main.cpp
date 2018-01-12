@@ -125,7 +125,7 @@ void parse_last_input_to_max_flow_adjacence_list_version_2(const vector<flight>&
     stack<int> S;
     for (int i = 0; i < flight_input.size(); ++i) {
         S.push(i);
-        while (!S.empty()){
+        while (!S.empty()) {
             int u = S.top();
             S.pop();
             for (int j = 0; j < flight_input.size(); ++j) {
@@ -139,8 +139,7 @@ void parse_last_input_to_max_flow_adjacence_list_version_2(const vector<flight>&
                             }
                         }
                     }
-                }
-                else {
+                } else {
                     if (flight_input[u][1] == flight_input[j][0] && flight_input[u][3] + 15 < flight_input[j][2]) {
                         capacity_matrix[u][flight_input.size() + j] = 1;
                         capacity_matrix[i][flight_input.size() + j] = 1;
