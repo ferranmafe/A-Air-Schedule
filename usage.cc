@@ -1,3 +1,7 @@
+#include <iostream>
+#include <stdlib.h>
+using namespace std;
+
 void usage() {
   cout << "./program  [Algoritmo de Max Flow] [Versión] [Fichero de entrada]" << endl;
   cout << "Programa que calcula, dados unos vuelos de entrada, el schedule que requiere el mínimo de pilotos para llevarse a cabo" << endl;
@@ -9,17 +13,17 @@ void usage() {
   exit(1);
 }
 
-int int main(int argc, char* argv[] ) {
+int main(int argc, char* argv[] ) {
   if (argc != 3) usage();
   int version = atoi(argv[2]);
   if (version <= 0 || version >= 2) {
-    cout << "La versión introducida no es válida. La versión ha de ser un entero entre 1 y 2. << endl;
-    exit(1).
+    cout << "La versión introducida no es válida. La versión ha de ser un entero entre 1 y 2." << endl;
+    exit(1);
   }  
   int algoritmo = atoi(argv[1]);
   if (algoritmo < 0 || algoritmo > 1) {
-    cout << "El algoritmo introducido no es válido. El algoritmo ha de ser un entero entre 0 y 1. << endl;
-    exit(1).
+    cout << "El algoritmo introducido no es válido. El algoritmo ha de ser un entero entre 0 y 1." << endl;
+    exit(1);
   }  
   string entrada = argv[3];
 }
